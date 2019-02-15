@@ -557,7 +557,14 @@
           do (serialize-object child)))
   (:method ((nodes vector))
     (loop for child across nodes
-          do (serialize-object child))))
+       do (serialize-object child)))
+  #+clasp
+  (:method ((nodes array))
+    ;;; better be one-dimensional
+    (if (null (rest (array-dimensions nodes)))
+        (loop for index from 0 below (length nodes)
+           do (serialize-object (aref nodes index)))
+        (warn "Multilevel-array in serialize-object ~a ~%" nodes))))
 
 (defgeneric traverse (node function &key test)
   (:method ((node node) function &key (test (constantly T)))
